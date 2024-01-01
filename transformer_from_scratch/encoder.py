@@ -17,20 +17,20 @@ class Encoder(nn.Module):
         d_model (int): The dimensionality of the input embeddings.
         num_layers (int): The number of EncoderLayer layers.
         heads (int): The number of attention heads.
-        dropout (float): The dropout rate.
+        dropout (float or None): The dropout probability of the feed-forward network. Defaults to None.
         forward_expansion (int): The forward expansion factor of the feed-forward network.
         max_len (int): The maximum length of the input sequence.
     """
 
     def __init__(
         self,
-        vocab_size,
-        d_model,
-        num_layers,
-        heads,
-        dropout,
-        forward_expansion,
-        max_len,
+        vocab_size: int,
+        d_model: int,
+        num_layers: int,
+        heads: int,
+        dropout: float or None = None,
+        forward_expansion: int = 4,
+        max_len: int = 512,
     ):
         super(Encoder, self).__init__()
 
@@ -48,7 +48,11 @@ class Encoder(nn.Module):
         # Positional Encoding Layer
         self.positional_encoding = PositionalEncoding(d_model, max_len)
 
-    def forward(self, x, mask):
+        # Dropout Layer
+        if dropout:
+            self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         """
         Passes the input through the Encoder.
 
@@ -60,15 +64,15 @@ class Encoder(nn.Module):
             The output of the Encoder.
         """
 
-        # Get the batch size and sequence length
-        batch_size = x.shape[0]
-        seq_len = x.shape[1]
-
         # Pass the input through the word embedding layer
         out = self.embedding(x)
 
         # Pass the embeddings through the positional encoding layer
         out = self.positional_encoding(out)
+
+        # Apply the dropout if specified
+        if self.dropout:
+            out = self.dropout(out)
 
         # Pass the output through the EncoderLayer layers
         for layer in self.layers:

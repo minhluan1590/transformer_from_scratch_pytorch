@@ -7,11 +7,11 @@ class MultiHeadAttention(nn.Module):
     Self Attention Layer in the paper "Attention is All You Need"
     """
 
-    def __init__(self, d_model, heads):
+    def __init__(self, d_model: int, heads: int):
         """
         Args:
-            d_model: Embedding size of the input
-            heads: Number of heads in Multi-Head Attention
+            d_model (int): The dimensionality of the input embeddings.
+            heads (int): The number of attention heads.
         """
 
         super(MultiHeadAttention, self).__init__()
@@ -38,16 +38,22 @@ class MultiHeadAttention(nn.Module):
             heads * self.head_dim, d_model
         )  # or we can write nn.Linear(d_model, d_model) because heads * self.head_dim = d_model
 
-    def forward(self, query, key, value, mask=None):
+    def forward(
+        self,
+        query: torch.Tensor,
+        key: torch.Tensor,
+        value: torch.Tensor,
+        mask: torch.Tensor = None,
+    ) -> torch.Tensor:
         """
         Args:
-            value: Value matrix of shape (batch_size, seq_len, d_model)
-            key: Key matrix of shape (batch_size, seq_len, d_model)
-            query: Query matrix of shape (batch_size, seq_len, d_model)
-            mask: Mask matrix of shape (batch_size, 1, seq_len, seq_len)
+            value (Tensor): Value matrix of shape (batch_size, seq_len, d_model)
+            key (Tensor): Key matrix of shape (batch_size, seq_len, d_model)
+            query (Tensor): Query matrix of shape (batch_size, seq_len, d_model)
+            mask (Tensor): Mask to apply to the attention layer. Defaults to None.
 
         Returns:
-            Attention output of shape (batch_size, seq_len, d_model)
+            Output tensor of shape (batch_size, seq_len, d_model)
         """
 
         # Get the batch size
@@ -100,9 +106,4 @@ class MultiHeadAttention(nn.Module):
             batch_size, seq_len, self.heads * self.head_dim
         )
 
-        # The shape of attention_output is (batch_size, seq_len, heads * head_dim)
-        # We apply the final Linear layer to it
-        # The shape of output is (batch_size, seq_len, d_model)
-        output = self.fc_out(attention_output)
-
-        return output
+        return self.fc_out(attention_output)

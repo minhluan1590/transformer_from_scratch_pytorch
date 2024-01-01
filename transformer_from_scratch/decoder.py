@@ -17,24 +17,32 @@ class Decoder(nn.Module):
         d_model (int): The dimensionality of the input embeddings.
         num_layers (int): The number of DecoderLayer layers.
         heads (int): The number of attention heads.
-        dropout (float): The dropout rate.
+        dropout (float or None): The dropout probability of the feed-forward network. Defaults to None.
         forward_expansion (int): The forward expansion factor of the feed-forward network.
         max_len (int): The maximum length of the input sequence.
     """
 
     def __init__(
         self,
-        vocab_size,
-        d_model,
-        num_layers,
-        heads,
-        dropout,
-        forward_expansion,
-        max_len,
+        vocab_size: int,
+        d_model: int,
+        num_layers: int,
+        heads: int,
+        dropout: float or None = None,
+        forward_expansion: int = 4,
+        max_len: int = 512,
     ):
         super(Decoder, self).__init__()
-        self.word_embedding = nn.Embedding(vocab_size, d_model)
+
+        # Initialize the word embedding layer
+        self.embedding = nn.Embedding(vocab_size, d_model)
+
+        # Initialize the positional encoding layer
         self.position_encoding = PositionalEncoding(d_model, max_len)
+
+        # Initialize the dropout layer
+        if dropout:
+            self.dropout = nn.Dropout(dropout)
 
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
@@ -42,15 +50,20 @@ class Decoder(nn.Module):
 
         self.fc_out = nn.Linear(d_model, vocab_size)
 
-    def forward(self, x, enc_out, src_mask, tgt_mask):
-        N, seq_length = x.shape
-        positions = torch.arange(0, seq_length).expand(N, seq_length).to(self.device)
+    def forward(
+        self, x, enc_out: torch.Tensor, src_mask: torch.Tensor, tgt_mask: torch.Tensor
+    ):
+        # Calculate the word embeddings
+        x = self.embedding(x)
 
-        x = self.dropout(self.word_embedding(x) + self.position_encoding(positions))
+        # Pass the word embeddings through the positional encoding layer
+        x = self.position_encoding(x)
+
+        # Apply the dropout if specified
+        if self.dropout:
+            x = self.dropout(x)
 
         for layer in self.layers:
             x = layer(x, enc_out, enc_out, src_mask, tgt_mask)
 
-        out = self.fc_out(x)
-
-        return out
+        return self.fc_out(x)

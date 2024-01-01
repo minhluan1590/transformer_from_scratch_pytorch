@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from transformer_from_scratch import MultiHeadAttention, AddNorm, FeedForwardNetwork
 
@@ -9,24 +10,19 @@ class DecoderLayer(nn.Module):
     This class combines two multi-head attention mechanisms (one for self-attention, one for encoder-decoder attention),
     two add & norm (layer normalization) steps, and a position-wise feed-forward network.
 
-    Attributes:
-        self_attention (MultiHeadAttention): The multi-head self-attention mechanism.
-        encoder_decoder_attention (MultiHeadAttention): The multi-head encoder-decoder attention mechanism.
-        norm1 (AddNorm): The first add & norm (layer normalization) step.
-        ffn (FeedForwardNetwork): The position-wise feed-forward network.
-        norm2 (AddNorm): The second add & norm (layer normalization) step.
-
     Args:
         d_model (int): The dimensionality of the input embeddings.
         heads (int): The number of attention heads.
-
-    Methods:
-        forward(value: Tensor, key: Tensor, query: Tensor, mask: Tensor) -> Tensor:
-            Passes the input through the decoder block and returns the output.
+        dropout (float or None): The dropout probability of the feed-forward network. Defaults to None.
+        forward_expansion (int): The forward expansion factor of the feed-forward network. Defaults to 4.
     """
 
     def __init__(
-        self, d_model, heads, dropout: float or None = None, forward_expansion=4
+        self,
+        d_model: int,
+        heads: int,
+        dropout: float or None = None,
+        forward_expansion: int = 4,
     ):
         super(DecoderLayer, self).__init__()
         # Initialize the multi-head self-attention mechanism
@@ -40,7 +36,7 @@ class DecoderLayer(nn.Module):
         # Initialize the second add & norm (layer normalization) step
         self.norm2 = AddNorm(d_model)
 
-    def forward(self, value, key, query, mask):
+    def forward(self, value: torch.Tensor, key: torch.Tensor, query: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         # Pass the input through the multi-head self-attention mechanism
         self_attention = self.self_attention(value, key, query, mask)
         # Pass the self-attention output through the first add & norm (layer normalization) step
@@ -51,7 +47,4 @@ class DecoderLayer(nn.Module):
         x = self.norm2(x + encoder_decoder_attention)
         # Pass the output through the position-wise feed-forward network
         ffn = self.ffn(x)
-        # Pass the ffn output through the third add & norm (layer normalization) step
-        output = self.norm3(x + ffn)
-
-        return output
+        return self.norm3(x + ffn)

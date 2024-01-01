@@ -9,21 +9,21 @@ class AddNorm(nn.Module):
     It is used to add the residual connection and apply layer normalization
     """
 
-    def __init__(self, d_model):
+    def __init__(self, d_model: int):
         """
         Args:
-            d_model: Embedding size of the input
+            d_model (int): The dimensionality of the input embeddings.
         """
         super(AddNorm, self).__init__()
 
         # Define the layer normalization layer
         self.layer_norm = nn.LayerNorm(d_model)
 
-    def forward(self, x, residual):
+    def forward(self, x: torch.Tensor, residual: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            x: Input tensor of shape (batch_size, seq_len, d_model)
-            residual: Residual tensor of shape (batch_size, seq_len, d_model)
+            x (Tensor): Input tensor of shape (batch_size, seq_len, d_model)
+            residual (Tensor): Residual tensor of shape (batch_size, seq_len, d_model)
 
         Returns:
             Output tensor of shape (batch_size, seq_len, d_model)

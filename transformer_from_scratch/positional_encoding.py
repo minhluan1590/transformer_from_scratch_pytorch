@@ -10,16 +10,10 @@ class PositionalEncoding(nn.Module):
 
     Args:
         d_model (int): The dimension of the embeddings.
-        max_len (int, optional): The maximum length of the sequences. Defaults to 5000.
-
-    Attributes:
-        pe (torch.Tensor): The positional encodings for the sequences.
-
-    Methods:
-        forward(x): Adds the positional encodings to the input embeddings.
+        max_len (int, optional): The maximum length of the sequences. Defaults to 512.
     """
 
-    def __init__(self, d_model, max_len=5000):
+    def __init__(self, d_model: int, max_len: int = 512):
         super(PositionalEncoding, self).__init__()
 
         # Compute the positional encodings once in log space.
@@ -34,6 +28,6 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0)
         self.register_buffer("pe", pe)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x + self.pe[:, : x.size(1)]
         return x

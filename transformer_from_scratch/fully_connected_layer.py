@@ -10,9 +10,9 @@ class FeedForwardNetwork(nn.Module):
     def __init__(self, d_model, dropout: float or None = None, forward_expansion=4):
         """
         Args:
-            d_model: Embedding size of the input
-            dropout: Dropout probability. Defaults to None.
-            forward_expansion: Forward expansion factor of the Feed Forward layer. Defaults to 4.
+            d_model (int): The dimensionality of the input embeddings.
+            dropout (float or None): The dropout probability of the feed-forward network. Defaults to None.
+            forward_expansion (int): The forward expansion factor of the feed-forward network. Defaults to 4.
         """
         super(FeedForwardNetwork, self).__init__()
 
@@ -26,15 +26,12 @@ class FeedForwardNetwork(nn.Module):
         self.fc_2 = nn.Linear(d_model * forward_expansion, d_model)
 
         # Define the dropout layer if dropout is not None
-        if dropout is not None:
-            self.dropout = nn.Dropout(dropout)
-        else:
-            self.dropout = None
+        self.dropout = nn.Dropout(dropout) if dropout is not None else None
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            x: Input tensor of shape (batch_size, seq_len, d_model)
+            x (Tensor): Input tensor of shape (batch_size, seq_len, d_model)
 
         Returns:
             Output tensor of shape (batch_size, seq_len, d_model)

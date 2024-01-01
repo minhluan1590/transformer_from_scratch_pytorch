@@ -26,7 +26,11 @@ class EncoderLayer(nn.Module):
     """
 
     def __init__(
-        self, d_model, heads, dropout: float or None = None, forward_expansion=4
+        self,
+        d_model: int,
+        heads: int,
+        dropout: float or None = None,
+        forward_expansion: int = 4,
     ):
         """
         The constructor of the EncoderLayer class.
@@ -51,7 +55,13 @@ class EncoderLayer(nn.Module):
         # Initialize the second add & norm (layer normalization) step
         self.norm2 = AddNorm(d_model)
 
-    def forward(self, value, key, query, mask):
+    def forward(
+        self,
+        value: torch.Tensor,
+        key: torch.Tensor,
+        query: torch.Tensor,
+        mask: torch.Tensor,
+    ) -> torch.Tensor:
         # Pass the input through the multi-head self-attention mechanism
         attention = self.attention(value, key, query, mask)
 
@@ -61,7 +71,4 @@ class EncoderLayer(nn.Module):
         # Pass the output through the position-wise feed-forward network
         ffn = self.ffn(x)
 
-        # Pass the ffn output through the second add & norm (layer normalization) step
-        output = self.norm2(x + ffn)
-
-        return output
+        return self.norm2(x + ffn)
